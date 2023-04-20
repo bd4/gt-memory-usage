@@ -7,9 +7,15 @@ include(cmake/CPM.cmake)
 CPMFindPackage(NAME gtensor
                GITHUB_REPOSITORY wdmapp/gtensor
                GIT_TAG "main"
-               OPTIONS "GTENSOR_ENABLE_BLAS ON")
+               OPTIONS "GTENSOR_ENABLE_BLAS ON"
+                       "GTENSOR_ENABLE_SOLVER ON")
 
 add_executable(axpy_memory_usage)
 target_sources(axpy_memory_usage PRIVATE axpy_memory_usage.cxx)
 target_link_libraries(axpy_memory_usage gtensor::gtensor)
 target_link_libraries(axpy_memory_usage gtensor::blas)
+
+add_executable(solver_memory_usage)
+target_sources(solver_memory_usage PRIVATE solver_memory_usage.cxx)
+target_link_libraries(solver_memory_usage gtensor::gtensor)
+target_link_libraries(solver_memory_usage gtensor::gtsolver)

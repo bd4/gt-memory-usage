@@ -4,8 +4,7 @@
 
 #include <gt-blas/blas.h>
 
-void gpuMemGetInfo(size_t* free, size_t* total)
-{
+void gpuMemGetInfo(size_t *free, size_t *total) {
 #ifdef GTENSOR_DEVICE_CUDA
   gtGpuCheck(cudaMemGetInfo(free, total));
 #elif defined(GTENSOR_DEVICE_HIP)
@@ -20,22 +19,28 @@ void gpuMemGetInfo(size_t* free, size_t* total)
 #endif
 }
 
-void print_memusage(const char *prefix)
-{
-  std::size_t free, total;
+size_t print_memusage(const char *prefix, std::size_t old_used = 0) {
+  constexpr double GB = 1024 * 1024 * 1024;
+  std::size_t free, total, used;
+  long delta;
   gpuMemGetInfo(&free, &total);
-  std::cout << prefix << " " << free << " / " << total << std::endl;
+  used = total - free;
+  delta = used - old_used;
+  std::cout << prefix << " " << used / GB << " / " << total / GB << ", delta "
+            << delta / GB << std::endl;
+  return used;
 }
 
 int main(int argc, char **argv) {
   constexpr int N = 1024 * 1024 * 1024;
+  std::size_t mem_used = 0;
 
-  print_memusage("start    ");
+  mem_used = print_memusage("start    ", mem_used);
 
   gt::gtensor_device<double, 1> d_x(gt::shape(N));
   gt::gtensor_device<double, 1> d_y(gt::shape(N));
 
-  print_memusage("x/y alloc");
+  mem_used = print_memusage("x/y alloc", mem_used);
 
   gt::gtensor<double, 1> h_x(gt::shape(N));
   gt::gtensor<double, 1> h_y(gt::shape(N));
@@ -48,16 +53,16 @@ int main(int argc, char **argv) {
   gt::copy(h_x, d_x);
   gt::copy(h_y, d_y);
 
-  print_memusage("copy     ");
+  mem_used = print_memusage("copy     ", mem_used);
 
   gt::blas::handle_t h;
 
-  print_memusage("handle   ");
+  mem_used = print_memusage("handle   ", mem_used);
 
   gt::blas::axpy(h, 2.0, d_x, d_y);
   gt::copy(d_y, h_y);
 
-  print_memusage("axpy     ");
+  mem_used = print_memusage("axpy     ", mem_used);
 
   std::cout << "y[0]:   " << h_y(0) << "\n"
             << "y[N-1]: " << h_y(N - 1) << std::endl;
