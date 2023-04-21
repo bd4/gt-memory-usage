@@ -19,3 +19,8 @@ add_executable(solver_memory_usage)
 target_sources(solver_memory_usage PRIVATE solver_memory_usage.cxx)
 target_link_libraries(solver_memory_usage gtensor::gtensor)
 target_link_libraries(solver_memory_usage gtensor::gtsolver)
+
+add_executable(lu_memory_usage)
+target_sources(lu_memory_usage PRIVATE lu_memory_usage.cxx)
+target_link_libraries(lu_memory_usage gtensor::gtensor)
+target_link_libraries(lu_memory_usage gtensor::blas)
